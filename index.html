@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gifted — Thank You Note Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #faf7f2;
+    --warm-white: #fff9f3;
+    --ink: #1a1510;
+    --muted: #8a7f74;
+    --accent: #c4703a;
+    --accent-light: #f0ddd0;
+    --border: #e8e0d8;
+    --card: #ffffff;
+    --success: #5a8a5e;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  header {
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--accent); font-style: italic; }
+
+  .tagline {
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-left: 1px solid var(--border);
+    padding-left: 12px;
+    margin-left: 4px;
+  }
+
+  main { max-width: 720px; margin: 0 auto; padding: 36px 20px; }
+
+  /* Upload Zone */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    background: var(--warm-white);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .upload-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .upload-zone h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+  .upload-zone p { color: var(--muted); font-size: 0.88rem; }
+
+  /* Preview */
+  .img-preview {
+    width: 100%;
+    border-radius: 12px;
+    max-height: 320px;
+    object-fit: cover;
+    margin-top: 16px;
+    display: none;
+    border: 1px solid var(--border);
+  }
+  .img-preview.visible { display: block; }
+
+  /* Btn */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: white;
+  }
+  .btn-primary:hover { background: #2e2720; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--ink); }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:hover { background: #ad5e2d; transform: translateY(-1px); }
+
+  .actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* Section title */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    margin: 36px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Gift card */
+  .gift-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .gift-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .gift-desc {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  /* Sender section */
+  .sender-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .sender-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .sender-inputs.single { grid-template-columns: 1fr; }
+
+  input[type=text], input[type=email], textarea, select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    background: var(--warm-white);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+
+  .note-area {
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    padding: 12px 14px;
+  }
+
+  .card-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  /* Status badge */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .badge-done { background: #e6f4e8; color: var(--success); }
+  .badge-pending { background: var(--accent-light); color: var(--accent); }
+
+  /* Loading spinner */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--ink);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s ease;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.9rem; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  /* Summary export */
+  .export-section { margin-top: 40px; padding: 24px; background: var(--ink); border-radius: 16px; color: white; }
+  .export-section h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 8px; }
+  .export-section p { font-size: 0.85rem; opacity: 0.7; margin-bottom: 16px; }
+
+  .api-banner {
+    background: var(--accent-light);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    font-size: 0.85rem;
+    color: var(--ink);
+  }
+  .api-banner strong { color: var(--accent); }
+
+  @media (max-width: 500px) {
+    .sender-inputs { grid-template-columns: 1fr; }
+    header { flex-wrap: wrap; }
+    .tagline { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">gift<span>ed</span></div>
+  <div class="tagline">Thank You Note Assistant</div>
+</header>
+
+<main>
+  <div class="api-banner">
+    <strong>⚙️ Setup required:</strong> Replace <code>YOUR_API_KEY</code> in the script with your Anthropic API key to enable AI features. This app runs entirely in your browser — your key is never stored or sent anywhere except directly to Anthropic.
+  </div>
+
+  <!-- Upload -->
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="fileInput" accept="image/*" multiple>
+    <div class="upload-icon">🎁</div>
+    <h2>Upload a gift photo</h2>
+    <p>Drag & drop or click to browse · JPG, PNG, HEIC supported</p>
+  </div>
+  <img class="img-preview" id="imgPreview" alt="Gift preview">
+
+  <div class="actions">
+    <button class="btn btn-primary" id="analyzeBtn" disabled>
+      <span id="analyzeBtnText">✨ Identify Gifts</span>
+    </button>
+    <button class="btn btn-secondary" id="clearBtn" style="display:none">Clear</button>
+  </div>
+
+  <!-- Gift list -->
+  <div id="giftSection" style="display:none">
+    <div class="section-title">Gifts Identified</div>
+    <div id="giftList"></div>
+  </div>
+
+  <!-- Export -->
+  <div class="export-section" id="exportSection" style="display:none">
+    <h3>📋 Export Thank You Notes</h3>
+    <p>Copy all your completed thank you notes to paste into email or print.</p>
+    <button class="btn btn-accent" id="exportBtn">Copy All Notes</button>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_KEY = 'YOUR_API_KEY'; // ← Replace with your Anthropic API key
+const MODEL = 'claude-sonnet-4-20250514';
+
+let currentImageBase64 = null;
+let currentImageType = null;
+let gifts = [];
+
+// DOM refs
+const fileInput = document.getElementById('fileInput');
+const uploadZone = document.getElementById('uploadZone');
+const imgPreview = document.getElementById('imgPreview');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const analyzeBtnText = document.getElementById('analyzeBtnText');
+const clearBtn = document.getElementById('clearBtn');
+const giftSection = document.getElementById('giftSection');
+const giftList = document.getElementById('giftList');
+const exportSection = document.getElementById('exportSection');
+
+// Drag and drop
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) handleFile(fileInput.files[0]);
+});
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    const parts = dataUrl.split(',');
+    currentImageBase64 = parts[1];
+    currentImageType = file.type || 'image/jpeg';
+    imgPreview.src = dataUrl;
+    imgPreview.classList.add('visible');
+    analyzeBtn.disabled = false;
+    clearBtn.style.display = 'inline-flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+clearBtn.addEventListener('click', () => {
+  currentImageBase64 = null;
+  currentImageType = null;
+  imgPreview.src = '';
+  imgPreview.classList.remove('visible');
+  analyzeBtn.disabled = true;
+  clearBtn.style.display = 'none';
+  fileInput.value = '';
+  gifts = [];
+  giftList.innerHTML = '';
+  giftSection.style.display = 'none';
+  exportSection.style.display = 'none';
+});
+
+analyzeBtn.addEventListener('click', analyzeImage);
+
+async function analyzeImage() {
+  if (!currentImageBase64) return;
+  analyzeBtn.disabled = true;
+  analyzeBtnText.innerHTML = '<span class="spinner"></span> Identifying gifts...';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: currentImageType, data: currentImageBase64 }
+            },
+            {
+              type: 'text',
+              text: `Look at this photo and identify all distinct gifts or items you can see. Return ONLY a JSON array (no markdown, no explanation) with objects like:
+[{"name": "Gift Name", "description": "Brief 1-2 sentence warm description of the item and why someone might love it"}]
+If there are multiple items, list each separately. Be specific and warm in descriptions.`
+            }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content.map(b => b.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    gifts = parsed.map((g, i) => ({ ...g, id: i, sender: {}, note: '', noteDone: false }));
+    renderGifts();
+    giftSection.style.display = 'block';
+    giftSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast(`Found ${gifts.length} gift${gifts.length > 1 ? 's' : ''}!`);
+  } catch (err) {
+    console.error(err);
+    showToast('Error analyzing image. Check your API key and try again.');
+  }
+
+  analyzeBtn.disabled = false;
+  analyzeBtnText.innerHTML = '✨ Identify Gifts';
+}
+
+function renderGifts() {
+  giftList.innerHTML = '';
+  gifts.forEach(gift => giftList.appendChild(createGiftCard(gift)));
+  checkExport();
+}
+
+function createGiftCard(gift) {
+  const card = document.createElement('div');
+  card.className = 'gift-card';
+  card.id = `gift-${gift.id}`;
+
+  card.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+      <div>
+        <div class="gift-name">🎁 ${gift.name}</div>
+        <div class="gift-desc">${gift.description}</div>
+      </div>
+      <span class="badge ${gift.noteDone ? 'badge-done' : 'badge-pending'}" id="badge-${gift.id}">
+        ${gift.noteDone ? '✓ Done' : 'Pending'}
+      </span>
+    </div>
+    <hr>
+    <div class="sender-label">From</div>
+    <div class="sender-inputs" id="senderInputs-${gift.id}">
+      <input type="text" placeholder="First name" id="firstName-${gift.id}" value="${gift.sender.firstName || ''}">
+      <input type="text" placeholder="Last name" id="lastName-${gift.id}" value="${gift.sender.lastName || ''}">
+    </div>
+    <div class="sender-inputs single" style="margin-bottom:8px">
+      <input type="email" placeholder="Email (optional)" id="email-${gift.id}" value="${gift.sender.email || ''}">
+    </div>
+    <div class="sender-inputs single">
+      <input type="text" placeholder="Address (optional)" id="address-${gift.id}" value="${gift.sender.address || ''}">
+    </div>
+    <div class="card-actions">
+      <button class="btn btn-primary" onclick="generateNote(${gift.id})">
+        <span id="noteBtn-${gift.id}">✍️ Generate Thank You</span>
+      </button>
+    </div>
+    <div id="noteSection-${gift.id}" style="${gift.note ? '' : 'display:none'}; margin-top:16px">
+      <hr>
+      <div class="sender-label" style="margin-bottom:8px">Thank You Note — edit as needed</div>
+      <textarea class="note-area" id="noteText-${gift.id}" oninput="saveNote(${gift.id})">${gift.note}</textarea>
+      <div class="card-actions">
+        <button class="btn btn-secondary" onclick="copyNote(${gift.id})">📋 Copy</button>
+        <button class="btn btn-accent" onclick="markDone(${gift.id})">✓ Mark as Sent</button>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+async function generateNote(id) {
+  const gift = gifts[id];
+  const firstName = document.getElementById(`firstName-${id}`).value.trim();
+  const lastName = document.getElementById(`lastName-${id}`).value.trim();
+  const email = document.getElementById(`email-${id}`).value.trim();
+  const address = document.getElementById(`address-${id}`).value.trim();
+
+  const senderName = [firstName, lastName].filter(Boolean).join(' ') || 'them';
+
+  const noteBtn = document.getElementById(`noteBtn-${id}`);
+  noteBtn.innerHTML = '<span class="spinner" style="border-top-color:white"></span> Writing...';
+
+  // Save sender info
+  gift.sender = { firstName, lastName, email, address };
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 300,
+        messages: [{
+          role: 'user',
+          content: `Write a warm, sincere, personal thank you note for receiving a gift.
+
+Gift: ${gift.name}
+Description: ${gift.description}
+Sender name: ${senderName}
+
+Write 2-4 sentences. Be genuine and specific to this exact gift. Start with "Dear ${firstName || senderName}," and sign off naturally. Do NOT be generic. No quotation marks around the note.`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const note = data.content.map(b => b.text || '').join('').trim();
+    gift.note = note;
+
+    const noteSection = document.getElementById(`noteSection-${id}`);
+    noteSection.style.display = 'block';
+    document.getElementById(`noteText-${id}`).value = note;
+    noteSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    showToast('Thank you note ready to edit!');
+  } catch (err) {
+    console.error(err);
+    showToast('Error generating note. Check your API key.');
+  }
+
+  noteBtn.innerHTML = '✍️ Regenerate';
+}
+
+function saveNote(id) {
+  gifts[id].note = document.getElementById(`noteText-${id}`).value;
+}
+
+function copyNote(id) {
+  const note = document.getElementById(`noteText-${id}`).value;
+  navigator.clipboard.writeText(note).then(() => showToast('Copied to clipboard!'));
+}
+
+function markDone(id) {
+  gifts[id].noteDone = true;
+  const badge = document.getElementById(`badge-${id}`);
+  badge.className = 'badge badge-done';
+  badge.textContent = '✓ Done';
+  checkExport();
+  showToast('Marked as sent!');
+}
+
+function checkExport() {
+  const hasNotes = gifts.some(g => g.note);
+  exportSection.style.display = hasNotes ? 'block' : 'none';
+}
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const all = gifts
+    .filter(g => g.note)
+    .map(g => {
+      const name = [g.sender.firstName, g.sender.lastName].filter(Boolean).join(' ') || 'Sender';
+      return `--- ${g.name} (from ${name}) ---\n${g.note}`;
+    })
+    .join('\n\n');
+  navigator.clipboard.writeText(all).then(() => showToast('All notes copied!'));
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
